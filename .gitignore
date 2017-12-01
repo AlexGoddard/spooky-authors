@@ -2,3 +2,4 @@
 .idea
 # Files written out while running the program
 postag.txt
+*.pyc

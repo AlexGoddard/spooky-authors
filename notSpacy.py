@@ -2,8 +2,8 @@ import spacy, re
 import pandas as pd
 
 nlp = spacy.load('en')
-train = pd.read_csv("~/Desktop/academics/AI/localProject/train.csv")
-test = pd.read_csv("~/Desktop/academics/AI/localProject/test.csv")
+train = pd.read_csv("data/train.csv")
+test = pd.read_csv("data/test.csv")
 postagfile = open('./postag.txt', 'w')
 wantedTags = re.compile(r'(\w+)\,\s?u\'NN.?\'|(\w+)\,\s?u\'JJ\'|(\w+)\,\s?u\'VB.\'')
 tempRegex = re.compile(r'\w+')
@@ -25,16 +25,16 @@ def getData():
 	for index, row in train.iterrows():
 		if row['author'] == 'EAP':
 			EAPdict.append(row['text'])
-			# print row['text'], row['author']
+			# print(row['text'], row['author']
 		elif row['author'] == 'MWS':
 			MWSsentences.append(row['text'])
 		else:
 			HPLsentences.append(row['text'])
 
 def findSimilarity(sent1, sent2):
-	u1 = unicode(sampleSentence1, "utf-8")
+	u1 = str(sampleSentence1)
 	u1 = nlp(u1)
-	u2 = unicode(sampleSentence2, "utf-8")
+	u2 = str(sampleSentence2)
 	u2 = nlp(u2)
 	return u1.similarity(u2)
 
@@ -42,7 +42,6 @@ def print_fine_pos(token):
     return (token.tag_)
 
 def pos_tags(sentence):
-    sentence = unicode(sentence, "utf-8")
     tokens = nlp(sentence)
     tags = []
     for tok in tokens:
@@ -53,7 +52,7 @@ def parsePOS(annotatedSentence):
 	words = list()
 	matches = re.findall(wantedTags, str(annotatedSentence))
 	for match in matches:
-		print tempRegex.findall(str(match))
+		print(tempRegex.findall(str(match)))
 		words.append(tempRegex.findall(str(match)))
 	return words
 
@@ -80,9 +79,9 @@ def countPOStagsConsolidated(annotatedSentence):
 	matches = wantedTags.findall(str(annotatedSentence))
 	count = 0
 	for match in matches:
-		print tempRegex.findall(str(match))
+		print(tempRegex.findall(str(match)))
 		count = count + 1
-	print count
+	print(count)
 
 def countPosTagsIndividually(annotatedSentence):
 
@@ -98,19 +97,19 @@ getData()
 '''
 Testing each module below
 '''
-print "EAP Sentences: {}, MWS Sentences: {}, HPL Sentences: {}".format(len(EAPdict), len(MWSsentences), len(HPLsentences))
+print("EAP Sentences: {}, MWS Sentences: {}, HPL Sentences: {}".format(len(EAPdict), len(MWSsentences), len(HPLsentences)))
 sampleSentence1 = EAPdict[0]
 sampleSentence2 = HPLsentences[3]
 
-print "Sentence 1 pos tag -> {}".format(pos_tags(sampleSentence1))
-print "Sentence 2 pos tag -> {}".format(pos_tags(sampleSentence2))
-print "Score for sentence 2 -> {}".format(parsePOS(pos_tags(sampleSentence1)))
+print("Sentence 1 pos tag -> {}".format(pos_tags(sampleSentence1)))
+print("Sentence 2 pos tag -> {}".format(pos_tags(sampleSentence2)))
+print("Score for sentence 2 -> {}".format(parsePOS(pos_tags(sampleSentence1))))
 
 '''
 Calling the counter for counting how many syntactic dependencies in a sentence
 '''
 
-print "Nouns, adjectives, verbs = {}".format(countPosTagsIndividually(pos_tags(sampleSentence1)))
+print("Nouns, adjectives, verbs = {}".format(countPosTagsIndividually(pos_tags(sampleSentence1))))
 
 
 
