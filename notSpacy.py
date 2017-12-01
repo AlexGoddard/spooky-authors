@@ -8,6 +8,9 @@ postagfile = open('./postag.txt', 'w')
 wantedTags = re.compile(r'(\w+)\,\s?u\'NN.?\'|(\w+)\,\s?u\'JJ\'|(\w+)\,\s?u\'VB.\'')
 tempRegex = re.compile(r'\w+')
 
+jjregex = re.compile(r'(\w+)\,\s?u\'JJ\'')
+nnregex = re.compile(r'(\w+)\,\s?u\'NN.?\'')
+vbregex = re.compile(r'(\w+)\,\s?u\'VB.\'')
 
 EAPdict = list()
 EAPtags = list()
@@ -73,13 +76,21 @@ def buildWords(sentences, author):
 			mwsfile.write('\n')
 
 
-def countPOStags(annotatedSentence):
+def countPOStagsConsolidated(annotatedSentence):
 	matches = wantedTags.findall(str(annotatedSentence))
 	count = 0
 	for match in matches:
 		print tempRegex.findall(str(match))
 		count = count + 1
 	print count
+
+def countPosTagsIndividually(annotatedSentence):
+
+	nnmatches = nnregex.findall(str(annotatedSentence))
+	jjmatches = jjregex.findall(str(annotatedSentence))
+	vbmatches = vbregex.findall(str(annotatedSentence))
+
+	return len(nnmatches), len(jjmatches), len(vbmatches)
 
 
 getData()
@@ -99,7 +110,7 @@ print "Score for sentence 2 -> {}".format(parsePOS(pos_tags(sampleSentence1)))
 Calling the counter for counting how many syntactic dependencies in a sentence
 '''
 
-print "".format(countPOStags(pos_tags(sampleSentence2)))
+print "Nouns, adjectives, verbs = {}".format(countPosTagsIndividually(pos_tags(sampleSentence1)))
 
 
 
