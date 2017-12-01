@@ -8,7 +8,7 @@ import numpy
 from nltk.stem import PorterStemmer
 from random import randint
 from collections import Counter
-from notSpacy import countPosTagsIndividually, pos_tags
+from sentence_parsing import countPosTagsIndividually
 
 __name__ = '__main__'
 
@@ -100,8 +100,7 @@ class TextProcessor:
                 if idx > 10:
                     break
                 sentence_id, raw_text, initials = row
-                annotated_sentence = pos_tags(raw_text)
-                nouns, adjectives, verbs = countPosTagsIndividually(annotated_sentence)
+                nouns, adjectives, verbs = countPosTagsIndividually(raw_text)
                 words = nltk.word_tokenize(raw_text)
                 cleaned_words = [word for word in words if word.lower() not in stopwords]
                 stemmed_words = [stemmer.stem(word) for word in cleaned_words]
@@ -125,13 +124,14 @@ class TextProcessor:
             vector_count = author.vectorized_count(processed_words)
             vector_values[initials][0] = vector_count
 
-            annoted_sentence = pos_tags(test_sentence)
-            nouns, adjectives, verbs = countPosTagsIndividually(annoted_sentence)
+            # annoted_sentence = pos_tags(test_sentence)
+            nouns, adjectives, verbs = countPosTagsIndividually(test_sentence)
             vector_values[initials][1] = author.pos_tag_similarity(nouns, adjectives, verbs)
 
             vector_sum += vector_count
         best_guess_word_bag = max(vector_values.items(), key=operator.itemgetter(1))
         best_guess_pos = min(vector_values.items(), key=operator.itemgetter(1))
+        print(best_guess_pos)
         if best_guess_word_bag[1][0] == 0:
             probability = 33
         else:
