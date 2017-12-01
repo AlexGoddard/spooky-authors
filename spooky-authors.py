@@ -5,6 +5,8 @@ import csv
 import nltk
 import operator
 import numpy
+import gensim
+from gensim import corpora
 from nltk.stem import PorterStemmer
 from random import randint
 from collections import Counter
@@ -152,6 +154,20 @@ class TextProcessor:
             print("\tCleaned words: " + str(sentence.cleaned_list))
             print()
 
+    def model_topics(self, stemmed_tokens):
+        ''''
+            generate topic models for tokens that are parsed with nltk and then stemmed.
+            creates a dictionary of word -> frequency entries as <K,V>
+            displays topics. for now like 2 topics. Have to play around with this if its being pursued.
+        '''
+
+        dictionary = corpora.Dictionary([stemmed_tokens])
+        # print(dictionary.token2id)
+        corpus = [dictionary.doc2bow(text.split()) for text in stemmed_tokens]
+        lda_model = gensim.models.ldamodel.LdaModel(corpus, num_topics=2, id2word=dictionary, passes=20)
+        # num_words decides the number of topics
+        return lda_model.print_topics(num_topics=2, num_words=4)
+
 
 def main():
     processor = TextProcessor()
@@ -160,6 +176,10 @@ def main():
     count = 0
     sentence = "This process, however, afforded me no means of ascertaining the dimensions of my dungeon; as I might make its circuit, and return to the point whence I set out, without being aware of the fact; so perfectly uniform seemed the wall."
     guess = processor.determine_author(sentence)
+    stem_tokens = processor.process_sentence(sentence)
+    lda_output = processor.model_topics(stem_tokens)
+    print(lda_output)
+
     # with open(TESTING_FILE, encoding='utf8') as testing_file:
     #     reader = csv.reader(testing_file, delimiter=',')
     #     for idx, row in enumerate(reader):
