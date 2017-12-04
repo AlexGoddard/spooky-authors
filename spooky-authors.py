@@ -18,7 +18,7 @@ __name__ = '__main__'
 TRAINING_FILE = 'data/train.csv'
 TESTING_FILE = 'data/test.csv'
 
-VECTOR_LENGTH = 50
+VECTOR_LENGTH = 20
 
 
 class Sentence:
@@ -131,14 +131,19 @@ class TextProcessor:
             vector_values[initials][1] = author.pos_tag_similarity(nouns, adjectives, verbs)
 
             vector_sum += vector_count
-        best_guess_word_bag = max(vector_values.items(), key=operator.itemgetter(1))
-        best_guess_pos = min(vector_values.items(), key=operator.itemgetter(1))
-        print(best_guess_pos)
-        if best_guess_word_bag[1][0] == 0:
-            probability = 33
+        word_bag_sort = sorted(vector_values.items(), reverse=True, key=lambda x: x[1][0])
+        pos_sort = sorted(vector_values.items(), key=lambda x: x[1][1])
+        if word_bag_sort[0][1][0] == word_bag_sort[1][1][0]:
+            if word_bag_sort[1][1][0] == word_bag_sort[2][1][0]:
+                best_guess_word_bag = pos_sort[0]
+            else:
+                to_remove = word_bag_sort[2]
+                pos_sort.remove(to_remove)
+                best_guess_word_bag = pos_sort[0]
         else:
-            probability = round((best_guess_word_bag[1][0] / vector_sum) * 100, 2)
-        return best_guess_word_bag[0], probability
+            best_guess_word_bag = word_bag_sort[0]
+        best_guess_pos = pos_sort[0]
+        return best_guess_word_bag[0], best_guess_pos[0]
 
     def print_sample_stats(self):
         for initials in self.authors:
@@ -172,25 +177,29 @@ class TextProcessor:
 def main():
     processor = TextProcessor()
     processor.process_training_data()
-    correct = 0
+    correct_word_bag = 0
+    correct_pos_tags = 0
     count = 0
-    sentence = "This process, however, afforded me no means of ascertaining the dimensions of my dungeon; as I might make its circuit, and return to the point whence I set out, without being aware of the fact; so perfectly uniform seemed the wall."
-    guess = processor.determine_author(sentence)
-    stem_tokens = processor.process_sentence(sentence)
-    lda_output = processor.model_topics(stem_tokens)
-    print(lda_output)
+    # sentence = "This process, however, afforded me no means of ascertaining the dimensions of my dungeon; as I might make its circuit, and return to the point whence I set out, without being aware of the fact; so perfectly uniform seemed the wall."
+    # guess = processor.determine_author(sentence)
+    # stem_tokens = processor.process_sentence(sentence)
+    # lda_output = processor.model_topics(stem_tokens)
+    # print(lda_output)
 
-    # with open(TESTING_FILE, encoding='utf8') as testing_file:
-    #     reader = csv.reader(testing_file, delimiter=',')
-    #     for idx, row in enumerate(reader):
-    #         if idx == 0:  # Skip the title row
-    #             continue
-    #         count += 1
-    #         sentence_id, raw_text, initials = row
-    #         guess = processor.determine_author(raw_text)
-    #         if guess[0] == initials:
-    #             correct += 1
-    # print(str(correct) + " / " + str(count))
+    with open(TESTING_FILE, encoding='utf8') as testing_file:
+        reader = csv.reader(testing_file, delimiter=',')
+        for idx, row in enumerate(reader):
+            if idx == 0:  # Skip the title row
+                continue
+            count += 1
+            sentence_id, raw_text, initials = row
+            guess = processor.determine_author(raw_text)
+            if guess[0] == initials:
+                correct_word_bag += 1
+            if guess[1] == initials:
+                correct_pos_tags += 1
+    print(str(correct_word_bag) + " / " + str(count))
+    print(str(correct_pos_tags) + " / " + str(count))
 
 
 if __name__ == '__main__':
